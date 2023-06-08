@@ -8,7 +8,6 @@ import com.hevlar.accounts.domain.entities.account.IAccount;
 import com.hevlar.accounts.domain.entities.journal.Journal;
 import com.hevlar.accounts.domain.exceptions.*;
 import com.hevlar.accounts.domain.repositories.ChartOfAccountRepository;
-import com.hevlar.accounts.domain.repositories.FinancialYearRepository;
 import com.hevlar.accounts.domain.repositories.GeneralLedgerRepository;
 import com.hevlar.accounts.domain.valueobjects.AccountGroup;
 
@@ -21,7 +20,7 @@ public class FinancialYearAccounting {
     private final ChartOfAccounts chartOfAccounts;
     private final GeneralLedger generalLedger;
 
-    public FinancialYearAccounting(FinancialYear financialYear, FinancialYearRepository financialYearRepository, ChartOfAccountRepository chartOfAccountRepository, GeneralLedgerRepository generalLedgerRepository){
+    public FinancialYearAccounting(FinancialYear financialYear, ChartOfAccountRepository chartOfAccountRepository, GeneralLedgerRepository generalLedgerRepository){
         this.financialYear = financialYear;
         this.chartOfAccounts = ChartOfAccounts.createInstance(chartOfAccountRepository);
         this.generalLedger = GeneralLedger.createInstance(generalLedgerRepository);

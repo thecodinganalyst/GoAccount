@@ -1,55 +1,45 @@
 package com.hevlar.accounts.domain.aggregates;
 
+import com.hevlar.accounts.domain.entities.BalanceSheet;
 import com.hevlar.accounts.domain.entities.FinancialYear;
+import com.hevlar.accounts.domain.entities.account.Account;
 import com.hevlar.accounts.domain.entities.account.BalanceSheetAccount;
 import com.hevlar.accounts.domain.entities.account.IAccount;
 import com.hevlar.accounts.domain.entities.journal.Journal;
-import com.hevlar.accounts.domain.exceptions.AccountHasJournalBeforeDateException;
-import com.hevlar.accounts.domain.exceptions.AccountReferencedInLedgerException;
+import com.hevlar.accounts.domain.exceptions.*;
 import com.hevlar.accounts.domain.repositories.ChartOfAccountRepository;
 import com.hevlar.accounts.domain.repositories.FinancialYearRepository;
 import com.hevlar.accounts.domain.repositories.GeneralLedgerRepository;
 import com.hevlar.accounts.domain.valueobjects.AccountGroup;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
 public class FinancialYearAccounting {
-    private final FinancialYearRepository financialYearRepository;
+    private final FinancialYear financialYear;
     private final ChartOfAccounts chartOfAccounts;
     private final GeneralLedger generalLedger;
 
-    public FinancialYearAccounting(FinancialYearRepository financialYearRepository, ChartOfAccountRepository chartOfAccountRepository, GeneralLedgerRepository generalLedgerRepository){
-        this.financialYearRepository = financialYearRepository;
+    public FinancialYearAccounting(FinancialYear financialYear, FinancialYearRepository financialYearRepository, ChartOfAccountRepository chartOfAccountRepository, GeneralLedgerRepository generalLedgerRepository){
+        this.financialYear = financialYear;
         this.chartOfAccounts = ChartOfAccounts.createInstance(chartOfAccountRepository);
         this.generalLedger = GeneralLedger.createInstance(generalLedgerRepository);
     }
 
-    public FinancialYear addFinancialYear(FinancialYear financialYear){
-        return this.financialYearRepository.add(financialYear);
-    }
-
-    public Integer removeFinancialYear(String label){
-        return this.financialYearRepository.remove(label);
-    }
-
-    public List<FinancialYear> list(){
-        return this.financialYearRepository.list();
-    }
-
-    public FinancialYear get(String label){
-        return this.financialYearRepository.get(label);
-    }
-
     public Map<AccountGroup, List<IAccount>> listAccounts(){
-        return this.chartOfAccounts.listAccounts();
+        return this.chartOfAccounts.listAccounts(financialYear.getStartDate(), financialYear.getEndDate());
     }
 
     public IAccount getAccount(String accountId){
         return this.chartOfAccounts.getAccount(accountId);
     }
 
-    public IAccount addAccount(IAccount account) {
+    public IAccount addAccount(IAccount account) throws AccountOpeningDateIsBeforeFyStartDateException, AccountOpeningDateIsAfterFyEndDateException {
+        if(account instanceof BalanceSheetAccount bsAccount){
+            if(bsAccount.getOpeningDate().isBefore(financialYear.getStartDate())) throw new AccountOpeningDateIsBeforeFyStartDateException();
+            if(bsAccount.getOpeningDate().isAfter(financialYear.getEndDate())) throw new AccountOpeningDateIsAfterFyEndDateException();
+        }
         return this.chartOfAccounts.addAccount(account);
     }
 
@@ -81,17 +71,34 @@ public class FinancialYearAccounting {
             if(!originalAccount.getCurrency().equals(updatedAccount.getCurrency())){
                 if(this.generalLedger.hasJournalOfAccountId(updated.getAccountId())) throw new AccountReferencedInLedgerException();
             }
+
+            if(updatedAccount.getOpeningDate().isBefore(financialYear.getStartDate())) throw new AccountOpeningDateIsBeforeFyStartDateException();
+            if(updatedAccount.getOpeningDate().isAfter(financialYear.getEndDate())) throw new AccountOpeningDateIsAfterFyEndDateException();
         }
 
         return this.chartOfAccounts.editAccount(updated);
     }
 
-    public Journal addJournal(Journal journal){
+    public Journal addJournal(Journal journal) throws JournalTxDateIsBeforeFyStartDateException, JournalTxDateIsAfterFyEndDateException, JournalPostedDateIsBeforeFyStartDateException, JournalPostedDateIsAfterFyEndDateException {
+        if(journal.getTxDate().isBefore(financialYear.getStartDate())) throw new JournalTxDateIsBeforeFyStartDateException();
+        if(journal.getTxDate().isAfter(financialYear.getEndDate())) throw new JournalTxDateIsAfterFyEndDateException();
+        if(journal.getPostedDate().isBefore(financialYear.getStartDate())) throw new JournalPostedDateIsBeforeFyStartDateException();
+        if(journal.getPostedDate().isAfter(financialYear.getEndDate())) throw new JournalPostedDateIsAfterFyEndDateException();
         return this.generalLedger.addJournal(journal);
     }
 
     public Integer removeJournal(Long journalId){
         return this.generalLedger.removeJournal(journalId);
+    }
+
+    public BalanceSheet generateBalanceSheet(LocalDate balanceDate, String currency){
+        List<BalanceSheetAccount> accountList = this.chartOfAccounts.listBalanceSheetAccounts(financialYear.getStartDate(), balanceDate);
+        List<String> accountIdList = accountList.stream().map(Account::getAccountId).toList();
+        return new BalanceSheet(
+                balanceDate,
+                currency,
+                accountList,
+                this.generalLedger.listLedgers(financialYear.getStartDate(), balanceDate, accountIdList));
     }
 
 }

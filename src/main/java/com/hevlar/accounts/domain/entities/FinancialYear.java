@@ -1,15 +1,16 @@
 package com.hevlar.accounts.domain.entities;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
 import java.time.LocalDate;
 
+@AllArgsConstructor
 public class FinancialYear {
+    @Getter
     String label;
+    @Getter
     LocalDate startDate;
+    @Getter
     LocalDate endDate;
-
-    public FinancialYear(String label, LocalDate startDate, LocalDate endDate){
-        this.label = label;
-        this.startDate = startDate;
-        this.endDate = endDate;
-    }
 }

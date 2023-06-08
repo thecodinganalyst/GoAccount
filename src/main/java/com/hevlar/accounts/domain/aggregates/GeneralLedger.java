@@ -1,9 +1,11 @@
 package com.hevlar.accounts.domain.aggregates;
 
+import com.hevlar.accounts.domain.entities.Ledger;
 import com.hevlar.accounts.domain.entities.journal.Journal;
 import com.hevlar.accounts.domain.repositories.GeneralLedgerRepository;
 
 import java.time.LocalDate;
+import java.util.List;
 
 class GeneralLedger {
     private final GeneralLedgerRepository generalLedgerRepository;
@@ -17,11 +19,11 @@ class GeneralLedger {
     }
 
     public Journal addJournal(Journal journal){
-        return this.generalLedgerRepository.add(journal);
+        return this.generalLedgerRepository.addJournal(journal);
     }
 
     public Integer removeJournal(Long journalId){
-        return this.generalLedgerRepository.remove(journalId);
+        return this.generalLedgerRepository.removeJournal(journalId);
     }
 
     public boolean hasJournalOfAccountId(String accountId){
@@ -31,4 +33,9 @@ class GeneralLedger {
     public boolean hasJournalOfAccountBeforeOnDate(String accountId, LocalDate date){
         return this.generalLedgerRepository.hasJournalOfAccountBeforeOnDate(accountId, date);
     }
+
+    List<Ledger> listLedgers(LocalDate startDate, LocalDate endDate, List<String> accountIdList){
+        return this.generalLedgerRepository.listLedgers(startDate, endDate, accountIdList);
+    }
+
 }

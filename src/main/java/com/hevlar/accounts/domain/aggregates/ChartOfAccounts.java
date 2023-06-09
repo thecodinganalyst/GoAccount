@@ -4,6 +4,7 @@ import com.hevlar.accounts.domain.entities.account.*;
 import com.hevlar.accounts.domain.repositories.ChartOfAccountRepository;
 import com.hevlar.accounts.domain.valueobjects.AccountGroup;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -18,7 +19,7 @@ class ChartOfAccounts {
         return new ChartOfAccounts(chartOfAccountRepository);
     }
     public IAccount addAccount(IAccount account){
-        return this.chartOfAccountRepository.add(account);
+        return this.chartOfAccountRepository.addAccount(account);
     }
 
     public IBalanceSheetAccount addAccount(IBalanceSheetAccount account){
@@ -26,11 +27,11 @@ class ChartOfAccounts {
     }
 
     public Integer removeAccount(String accountId) {
-        return this.chartOfAccountRepository.remove(accountId);
+        return this.chartOfAccountRepository.removeAccount(accountId);
     }
 
     public IAccount editAccount(IAccount account){
-        return this.chartOfAccountRepository.edit(account);
+        return this.chartOfAccountRepository.editAccount(account);
     }
 
     public IBalanceSheetAccount editAccount(IBalanceSheetAccount account){
@@ -38,11 +39,15 @@ class ChartOfAccounts {
     }
 
     public IAccount getAccount(String accountId){
-        return this.chartOfAccountRepository.get(accountId);
+        return this.chartOfAccountRepository.getAccount(accountId);
     }
 
-    public Map<AccountGroup, List<IAccount>> listAccounts(){
-        return this.chartOfAccountRepository.list().stream().collect(Collectors.groupingBy(IAccount::getAccountGroup));
+    public Map<AccountGroup, List<IAccount>> listAccounts(LocalDate startDate, LocalDate endDate){
+        return this.chartOfAccountRepository.listAccounts(startDate, endDate).stream().collect(Collectors.groupingBy(IAccount::getAccountGroup));
+    }
+
+    public List<BalanceSheetAccount> listBalanceSheetAccounts(LocalDate startDate, LocalDate endDate){
+        return this.chartOfAccountRepository.listBalanceSheetAccounts(startDate, endDate);
     }
 
 }

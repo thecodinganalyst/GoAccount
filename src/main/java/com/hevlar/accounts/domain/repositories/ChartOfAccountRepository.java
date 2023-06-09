@@ -1,8 +1,10 @@
 package com.hevlar.accounts.domain.repositories;
 
+import com.hevlar.accounts.domain.entities.account.BalanceSheetAccount;
 import com.hevlar.accounts.domain.entities.account.IAccount;
 import com.hevlar.accounts.domain.entities.account.IBalanceSheetAccount;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface ChartOfAccountRepository<T extends IAccount> {

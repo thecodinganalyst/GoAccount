@@ -9,15 +9,19 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 class ChartOfAccounts {
-    private final ChartOfAccountRepository chartOfAccountRepository;
+    private final ChartOfAccountRepository<IAccount> chartOfAccountRepository;
 
-    private ChartOfAccounts(ChartOfAccountRepository chartOfAccountRepository){
+    private ChartOfAccounts(ChartOfAccountRepository<IAccount> chartOfAccountRepository){
         this.chartOfAccountRepository = chartOfAccountRepository;
     }
-    static ChartOfAccounts createInstance(ChartOfAccountRepository chartOfAccountRepository){
+    static ChartOfAccounts createInstance(ChartOfAccountRepository<IAccount> chartOfAccountRepository){
         return new ChartOfAccounts(chartOfAccountRepository);
     }
     public IAccount addAccount(IAccount account){
+        return this.chartOfAccountRepository.add(account);
+    }
+
+    public IBalanceSheetAccount addAccount(IBalanceSheetAccount account){
         return this.chartOfAccountRepository.add(account);
     }
 
@@ -26,6 +30,10 @@ class ChartOfAccounts {
     }
 
     public IAccount editAccount(IAccount account){
+        return this.chartOfAccountRepository.edit(account);
+    }
+
+    public IBalanceSheetAccount editAccount(IBalanceSheetAccount account){
         return this.chartOfAccountRepository.edit(account);
     }
 

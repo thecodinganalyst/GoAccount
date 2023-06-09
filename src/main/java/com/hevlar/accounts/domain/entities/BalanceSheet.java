@@ -9,9 +9,9 @@ import java.util.HashMap;
 public class BalanceSheet {
     LocalDate balanceDate;
     String currency;
-    HashMap<BalanceSheetAccount, BigDecimal> fixedAssets;
-    HashMap<BalanceSheetAccount, BigDecimal> currentAssets;
-    HashMap<BalanceSheetAccount, BigDecimal> currentLiabilities;
-    HashMap<BalanceSheetAccount, BigDecimal> longTermLiabilities;
-    HashMap<BalanceSheetAccount, BigDecimal> equities;
+    HashMap<IBalanceSheetAccount, BigDecimal> fixedAssets;
+    HashMap<IBalanceSheetAccount, BigDecimal> currentAssets;
+    HashMap<IBalanceSheetAccount, BigDecimal> currentLiabilities;
+    HashMap<IBalanceSheetAccount, BigDecimal> longTermLiabilities;
+    HashMap<IBalanceSheetAccount, BigDecimal> equities;
 }

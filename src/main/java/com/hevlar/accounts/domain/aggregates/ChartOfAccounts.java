@@ -10,16 +10,16 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 class ChartOfAccounts {
-    private final ChartOfAccountRepository<IAccount> chartOfAccountRepository;
+    private final ChartOfAccountRepository<IAccount, IBalanceSheetAccount> chartOfAccountRepository;
 
-    private ChartOfAccounts(ChartOfAccountRepository<IAccount> chartOfAccountRepository){
+    private ChartOfAccounts(ChartOfAccountRepository<IAccount, IBalanceSheetAccount> chartOfAccountRepository){
         this.chartOfAccountRepository = chartOfAccountRepository;
     }
-    static ChartOfAccounts createInstance(ChartOfAccountRepository<IAccount> chartOfAccountRepository){
+    static ChartOfAccounts createInstance(ChartOfAccountRepository<IAccount, IBalanceSheetAccount> chartOfAccountRepository){
         return new ChartOfAccounts(chartOfAccountRepository);
     }
     public IAccount addAccount(IAccount account){
-        return this.chartOfAccountRepository.addAccount(account);
+        return this.chartOfAccountRepository.add(account);
     }
 
     public IBalanceSheetAccount addAccount(IBalanceSheetAccount account){
@@ -27,11 +27,11 @@ class ChartOfAccounts {
     }
 
     public Integer removeAccount(String accountId) {
-        return this.chartOfAccountRepository.removeAccount(accountId);
+        return this.chartOfAccountRepository.remove(accountId);
     }
 
     public IAccount editAccount(IAccount account){
-        return this.chartOfAccountRepository.editAccount(account);
+        return this.chartOfAccountRepository.edit(account);
     }
 
     public IBalanceSheetAccount editAccount(IBalanceSheetAccount account){
@@ -39,14 +39,14 @@ class ChartOfAccounts {
     }
 
     public IAccount getAccount(String accountId){
-        return this.chartOfAccountRepository.getAccount(accountId);
+        return this.chartOfAccountRepository.get(accountId);
     }
 
     public Map<AccountGroup, List<IAccount>> listAccounts(LocalDate startDate, LocalDate endDate){
-        return this.chartOfAccountRepository.listAccounts(startDate, endDate).stream().collect(Collectors.groupingBy(IAccount::getAccountGroup));
+        return this.chartOfAccountRepository.list(startDate, endDate).stream().collect(Collectors.groupingBy(IAccount::getAccountGroup));
     }
 
-    public List<BalanceSheetAccount> listBalanceSheetAccounts(LocalDate startDate, LocalDate endDate){
+    public List<IBalanceSheetAccount> listBalanceSheetAccounts(LocalDate startDate, LocalDate endDate){
         return this.chartOfAccountRepository.listBalanceSheetAccounts(startDate, endDate);
     }
 

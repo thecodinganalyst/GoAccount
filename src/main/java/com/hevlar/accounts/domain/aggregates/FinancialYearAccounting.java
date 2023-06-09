@@ -2,10 +2,7 @@ package com.hevlar.accounts.domain.aggregates;
 
 import com.hevlar.accounts.domain.entities.BalanceSheet;
 import com.hevlar.accounts.domain.entities.FinancialYear;
-import com.hevlar.accounts.domain.entities.account.Account;
-import com.hevlar.accounts.domain.entities.account.BalanceSheetAccount;
 import com.hevlar.accounts.domain.entities.account.IAccount;
-import com.hevlar.accounts.domain.entities.journal.Journal;
 import com.hevlar.accounts.domain.exceptions.*;
 import com.hevlar.accounts.domain.entities.account.IBalanceSheetAccount;
 import com.hevlar.accounts.domain.entities.journal.IJournal;
@@ -24,7 +21,7 @@ public class FinancialYearAccounting {
     private final ChartOfAccounts chartOfAccounts;
     private final GeneralLedger generalLedger;
 
-    public FinancialYearAccounting(FinancialYear financialYear, ChartOfAccountRepository chartOfAccountRepository, GeneralLedgerRepository generalLedgerRepository){
+    public FinancialYearAccounting(FinancialYear financialYear, ChartOfAccountRepository<IAccount, IBalanceSheetAccount> chartOfAccountRepository, GeneralLedgerRepository generalLedgerRepository) {
         this.financialYear = financialYear;
         this.chartOfAccounts = ChartOfAccounts.createInstance(chartOfAccountRepository);
         this.generalLedger = GeneralLedger.createInstance(generalLedgerRepository);
@@ -38,15 +35,13 @@ public class FinancialYearAccounting {
         return this.chartOfAccounts.getAccount(accountId);
     }
 
-    public IAccount addAccount(IAccount account) throws AccountOpeningDateIsBeforeFyStartDateException, AccountOpeningDateIsAfterFyEndDateException {
-        if(account instanceof BalanceSheetAccount bsAccount){
-            if(bsAccount.getOpeningDate().isBefore(financialYear.getStartDate())) throw new AccountOpeningDateIsBeforeFyStartDateException();
-            if(bsAccount.getOpeningDate().isAfter(financialYear.getEndDate())) throw new AccountOpeningDateIsAfterFyEndDateException();
-        }
+    public IAccount addAccount(IAccount account) {
         return this.chartOfAccounts.addAccount(account);
     }
 
-    public IBalanceSheetAccount addAccount(IBalanceSheetAccount account) {
+    public IBalanceSheetAccount addAccount(IBalanceSheetAccount account) throws AccountOpeningDateIsBeforeFyStartDateException, AccountOpeningDateIsAfterFyEndDateException {
+        if(account.getOpeningDate().isBefore(financialYear.getStartDate())) throw new AccountOpeningDateIsBeforeFyStartDateException();
+        if(account.getOpeningDate().isAfter(financialYear.getEndDate())) throw new AccountOpeningDateIsAfterFyEndDateException();
         return this.chartOfAccounts.addAccount(account);
     }
 
@@ -63,22 +58,6 @@ public class FinancialYearAccounting {
         }
     }
 
-        if(isBalanceSheetAccount){
-            BalanceSheetAccount originalAccount = (BalanceSheetAccount) original;
-            BalanceSheetAccount updatedAccount = (BalanceSheetAccount) updated;
-
-            if(!originalAccount.getOpeningDate().isEqual(updatedAccount.getOpeningDate())){
-                if(generalLedger.hasJournalOfAccountBeforeOnDate(updatedAccount.getAccountId(), updatedAccount.getOpeningDate())){
-                    throw new AccountHasJournalBeforeDateException();
-                }
-            }
-            if(!originalAccount.getCurrency().equals(updatedAccount.getCurrency())){
-                if(this.generalLedger.hasJournalOfAccountId(updated.getAccountId())) throw new AccountReferencedInLedgerException();
-            }
-
-            if(updatedAccount.getOpeningDate().isBefore(financialYear.getStartDate())) throw new AccountOpeningDateIsBeforeFyStartDateException();
-            if(updatedAccount.getOpeningDate().isAfter(financialYear.getEndDate())) throw new AccountOpeningDateIsAfterFyEndDateException();
-        }
     public void validateEditBalanceSheetAccount(IBalanceSheetAccount original, IBalanceSheetAccount updated) throws Exception {
         if(!original.getOpeningDate().isEqual(updated.getOpeningDate())){
             if(generalLedger.hasJournalOfAccountBeforeOnDate(updated.getAccountId(), updated.getOpeningDate())){
@@ -88,6 +67,9 @@ public class FinancialYearAccounting {
         if(!original.getCurrency().equals(updated.getCurrency())){
             if(this.generalLedger.hasJournalOfAccountId(updated.getAccountId())) throw new AccountReferencedInLedgerException();
         }
+
+        if(updated.getOpeningDate().isBefore(financialYear.getStartDate())) throw new AccountOpeningDateIsBeforeFyStartDateException();
+        if(updated.getOpeningDate().isAfter(financialYear.getEndDate())) throw new AccountOpeningDateIsAfterFyEndDateException();
     }
 
     public IBalanceSheetAccount editAccount(IBalanceSheetAccount updated) throws Exception {
@@ -103,8 +85,7 @@ public class FinancialYearAccounting {
         return this.chartOfAccounts.editAccount(updated);
     }
 
-    public IJournal addJournal(IJournal journal){
-    public Journal addJournal(Journal journal) throws JournalTxDateIsBeforeFyStartDateException, JournalTxDateIsAfterFyEndDateException, JournalPostedDateIsBeforeFyStartDateException, JournalPostedDateIsAfterFyEndDateException {
+    public IJournal addJournal(IJournal journal) throws JournalTxDateIsBeforeFyStartDateException, JournalTxDateIsAfterFyEndDateException, JournalPostedDateIsBeforeFyStartDateException, JournalPostedDateIsAfterFyEndDateException {
         if(journal.getTxDate().isBefore(financialYear.getStartDate())) throw new JournalTxDateIsBeforeFyStartDateException();
         if(journal.getTxDate().isAfter(financialYear.getEndDate())) throw new JournalTxDateIsAfterFyEndDateException();
         if(journal.getPostedDate().isBefore(financialYear.getStartDate())) throw new JournalPostedDateIsBeforeFyStartDateException();
@@ -117,8 +98,8 @@ public class FinancialYearAccounting {
     }
 
     public BalanceSheet generateBalanceSheet(LocalDate balanceDate, String currency){
-        List<BalanceSheetAccount> accountList = this.chartOfAccounts.listBalanceSheetAccounts(financialYear.getStartDate(), balanceDate);
-        List<String> accountIdList = accountList.stream().map(Account::getAccountId).toList();
+        List<IBalanceSheetAccount> accountList = this.chartOfAccounts.listBalanceSheetAccounts(financialYear.getStartDate(), balanceDate);
+        List<String> accountIdList = accountList.stream().map(IBalanceSheetAccount::getAccountId).toList();
         return new BalanceSheet(
                 balanceDate,
                 currency,

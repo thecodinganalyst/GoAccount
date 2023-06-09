@@ -5,9 +5,10 @@ import com.hevlar.accounts.domain.entities.account.IBalanceSheetAccount;
 import com.hevlar.accounts.domain.repositories.ChartOfAccountRepository;
 import com.hevlar.accounts.infrastructure.entities.Account;
 
+import java.time.LocalDate;
 import java.util.List;
 
-public class AccountRepository implements ChartOfAccountRepository<Account> {
+public class AccountRepository implements ChartOfAccountRepository<Account, Account> {
 
     JpaAccountRepository jpaAccountRepository;
 
@@ -64,7 +65,12 @@ public class AccountRepository implements ChartOfAccountRepository<Account> {
     }
 
     @Override
-    public List<Account> list() {
-        return this.jpaAccountRepository.findAll();
+    public List<Account> list(LocalDate startDate, LocalDate endDate) {
+        return this.jpaAccountRepository.listAccounts(startDate, endDate);
+    }
+
+    @Override
+    public List<Account> listBalanceSheetAccounts(LocalDate startDate, LocalDate endDate) {
+        return this.jpaAccountRepository.listBalanceSheetAccounts(startDate, endDate);
     }
 }

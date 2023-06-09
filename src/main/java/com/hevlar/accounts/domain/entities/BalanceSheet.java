@@ -16,17 +16,17 @@ public class BalanceSheet {
     public BalanceSheet(
             LocalDate balanceDate,
             String currency,
-            List<BalanceSheetAccount> accountList,
+            List<IBalanceSheetAccount> accountList,
             List<Ledger> ledgerList){
         this.balanceDate = balanceDate;
         this.currency = currency;
-        Map<AccountGroup, List<BalanceSheetAccount>> accountMap = accountList.stream()
-                .collect(Collectors.groupingBy(BalanceSheetAccount::getAccountGroup));
+        Map<AccountGroup, List<IBalanceSheetAccount>> accountMap = accountList.stream()
+                .collect(Collectors.groupingBy(IBalanceSheetAccount::getAccountGroup));
         Map<String, List<Ledger>> ledgerMap = ledgerList.stream()
                 .collect(Collectors.groupingBy(Ledger::getAccountId));
 
         for(AccountGroup accountGroup: accountMap.keySet()){
-            List<BalanceSheetAccount> accounts = accountMap.get(accountGroup);
+            List<IBalanceSheetAccount> accounts = accountMap.get(accountGroup);
             List<AccountLedger> accountLedgerList = accounts.stream().map(account -> new AccountLedger(account, ledgerMap.get(account.getAccountId()))).toList();
             data.put(accountGroup, accountLedgerList);
         }
@@ -34,10 +34,10 @@ public class BalanceSheet {
     }
 
     public static class AccountLedger {
-        BalanceSheetAccount account;
+        IBalanceSheetAccount account;
         List<Ledger> ledgerList;
 
-        public AccountLedger(BalanceSheetAccount account, List<Ledger> ledgerList){
+        public AccountLedger(IBalanceSheetAccount account, List<Ledger> ledgerList){
             this.account = account;
             this.ledgerList = ledgerList;
         }

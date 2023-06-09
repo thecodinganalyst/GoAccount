@@ -1,7 +1,6 @@
 package com.hevlar.accounts.domain.repositories;
 
 import com.hevlar.accounts.domain.entities.Ledger;
-import com.hevlar.accounts.domain.entities.journal.Journal;
 import com.hevlar.accounts.domain.entities.journal.IJournal;
 
 import java.time.LocalDate;

@@ -1,7 +1,6 @@
 package com.hevlar.accounts.domain.aggregates;
 
 import com.hevlar.accounts.domain.entities.Ledger;
-import com.hevlar.accounts.domain.entities.journal.Journal;
 import com.hevlar.accounts.domain.entities.journal.IJournal;
 import com.hevlar.accounts.domain.repositories.GeneralLedgerRepository;
 
@@ -19,7 +18,7 @@ class GeneralLedger {
         return new GeneralLedger(generalLedgerRepository);
     }
 
-    public Journal addJournal(IJournal journal){
+    public IJournal addJournal(IJournal journal){
         return this.generalLedgerRepository.addJournal(journal);
     }
 
